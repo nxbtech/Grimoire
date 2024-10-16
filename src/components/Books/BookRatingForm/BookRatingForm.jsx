@@ -19,6 +19,7 @@ function BookRatingForm({
       rating: 0,
     },
   });
+
   useEffect(() => {
     if (formState.dirtyFields.rating) {
       const rate = document.querySelector('input[name="rating"]:checked').value;
@@ -26,12 +27,12 @@ function BookRatingForm({
       formState.dirtyFields.rating = false;
     }
   }, [formState]);
+
   const onSubmit = async () => {
     if (!connectedUser || !auth) {
       navigate(APP_ROUTES.SIGN_IN);
     }
     const update = await rateBook(id, userId, rating);
-    console.log(update);
     if (update) {
       // eslint-disable-next-line no-underscore-dangle
       setBook({ ...update, id: update._id });
@@ -39,15 +40,20 @@ function BookRatingForm({
       alert(update);
     }
   };
+
   return (
     <div className={styles.BookRatingForm}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <p>{rating > 0 ? 'Votre Note' : 'Notez cet ouvrage'}</p>
-        <div className={styles.Stars}>
-          {!userRated ? generateStarsInputs(rating, register) : displayStars(rating)}
-        </div>
-        {!userRated ? <button type="submit">Valider</button> : null}
-      </form>
+      {userId ? (
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <p>{rating > 0 ? 'Votre Note' : 'Notez cet ouvrage'}</p>
+          <div className={styles.Stars}>
+            {!userRated ? generateStarsInputs(rating, register) : displayStars(rating)}
+          </div>
+          {!userRated ? <button type="submit">Valider</button> : null}
+        </form>
+      ) : (
+        <p>Veuillez vous connecter pour noter ce livre.</p>
+      )}
     </div>
   );
 }
@@ -55,10 +61,14 @@ function BookRatingForm({
 BookRatingForm.propTypes = {
   rating: PropTypes.number.isRequired,
   setRating: PropTypes.func.isRequired,
-  userId: PropTypes.string.isRequired,
+  userId: PropTypes.string,
   setBook: PropTypes.func.isRequired,
   id: PropTypes.string.isRequired,
   userRated: PropTypes.bool.isRequired,
+};
+
+BookRatingForm.defaultProps = {
+  userId: null,
 };
 
 export default BookRatingForm;
